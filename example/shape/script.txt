@@ -1,0 +1,15 @@
+?- [load].
+%  library(lojeme) compiled 0.00 sec, 14,984 bytes
+%  line compiled 0.00 sec, 4,040 bytes
+%  square compiled 0.00 sec, 4,344 bytes
+%  cube compiled 0.00 sec, 4,016 bytes
+% load compiled 0.01 sec, 30,576 bytes
+true.
+
+?- square::new(S, 10, red), S::area(Area).
+S = square(line(10, red), red),
+Area = 100 .
+
+?- cube::new(C, 10), C::set_color(green), C::area(Area).
+C = cube(line(10, _G21), green),
+Area = 1000 .

@@ -90,7 +90,7 @@ var_check_(Type, Var, Check) :-
 		Type = compound,
 		Check = (compound(Var))
 	; % check object class
-		Check = (Var =.. [Type|_])
+		Check = (functor(Var, Type, _))
 	), !.
 
 class_cast_exception_(Obj, ExpectedType) :-
@@ -188,3 +188,7 @@ end_class :-
 	retractall( ivar_(_, _, _, _) ),
 	retractall( clause_(_, _, _) ),
 	retractall( iconstructor_(_) ).
+
+compile_lojeme :-
+	index( obj_pred_(0, 0, 1, 0) ),
+	compile_predicates([obj_pred_/4]).

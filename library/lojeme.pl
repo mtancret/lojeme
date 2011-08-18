@@ -16,10 +16,11 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-:- dynamic(obj_pred_/3).
-:- op(650, xfy, ::).
-Obj::Goal :-
-	obj_pred_(Obj, Goal, Obj).
+:- dynamic(obj_pred_/4).
+:- op(650, xfy, .).
+Obj.Goal :-
+	functor(Obj, Class, Arity),
+	obj_pred_(Class, Arity, Goal, Obj).
 
 :- dynamic(clause_/3).
 :- op(1155, xfx, --).
@@ -47,11 +48,10 @@ make_constructor_([Self|Args], Body) :-
 	class_(Class),
 	New =.. [new|[Self|Args]],
 	asserta((
-		obj_pred_(Class, New, _) :-
+		obj_pred_(Class, 0, New, _) :-
 			(
 				var(Self),
-				obj_pred_(Class, arity(Arity), _),
-				functor(Self, Class, Arity), !
+				obj_pred_(Class, 0, template_(Self), _), !
 			;
 				true
 			),
@@ -117,18 +117,19 @@ get_next_arg_idx_(Arg) :-
 	Argpp is Arg + 1,
 	asserta(next_arg_idx_(Argpp)).
 
-:- dynamic(ivar_/3).
-ivar(Type, Name) :-
+:- dynamic(ivar_/4).
+ivar(Type, Name, Default) :-
 	get_next_arg_idx_(ArgIdx),
-	assertz(ivar_(Type, Name, ArgIdx)).
+	assertz(ivar_(Type, Name, ArgIdx, Default)).
+ivar(Type, Name) :-
+	ivar(Type, Name, _).
 
 make_iconstructor_(Class, [Self|Args], TotalArgs) :-
-	functor(Obj, Class, TotalArgs),
 	Inew =.. [new|Args],
 	Cnew =.. [new|[Self|Args]],
 	assertz((
-		obj_pred_(Obj, Inew, Self) :-
-			obj_pred_(Class, Cnew, Self)
+		obj_pred_(Class, TotalArgs, Inew, Self) :-
+			obj_pred_(Class, 0, Cnew, Self), !
 	)).
 
 make_ivar_(Class, Type, Name, ArgIdx, TotalArgs) :-
@@ -136,14 +137,14 @@ make_ivar_(Class, Type, Name, ArgIdx, TotalArgs) :-
 	arg(ArgIdx, Obj, GetValue),
 	Getter =.. [Name, GetValue],
 	asserta((
-		obj_pred_(Obj, Getter, _) :- !
+		obj_pred_(Class, TotalArgs, Getter, Obj) :- !
 	)),
 
 	atom_concat('set_', Name, SetterName),
 	Setter =.. [SetterName, SetValue],
 	var_check_(Type, SetValue, CheckType),
 	asserta((
-		obj_pred_(Obj, Setter, Self) :-
+		obj_pred_(Class, TotalArgs, Setter, Self) :-
 			CheckType,
 			nb_linkarg(ArgIdx, Self, SetValue), !
 			;
@@ -151,28 +152,35 @@ make_ivar_(Class, Type, Name, ArgIdx, TotalArgs) :-
 	)).
 
 make_clause_(Class, Name, [Self|Args], Body, TotalArgs) :-
-	functor(Obj, Class, TotalArgs),
 	Head =.. [Name|Args],
 	assertz((
-		obj_pred_(Obj, Head, Self) :- Body
+		obj_pred_(Class, TotalArgs, Head, Self) :- Body
 	)).
 
 end_class :-
 	class_(Class),
 	next_arg_idx_(NextArgIdx),
 	TotalNumArgs is NextArgIdx - 1,
-	retract(next_arg_idx_(_)),
+	retract( next_arg_idx_(_) ),
 
-	forall(ivar_(Type, Name, ArgIdx),
-		make_ivar_(Class, Type, Name, ArgIdx, TotalNumArgs)),
-	retractall(ivar_(_, _, _)),
+	functor(Template, Class, TotalNumArgs),
+	foreach( ivar_(_, _, ArgIdx, Default), (
+		nb_linkarg(ArgIdx, Template, Default)
+	)),
+	asserta( obj_pred_(Class, 0, template_(Template), _) ),
 
-	forall(clause_(Name, Args, Body),
-		make_clause_(Class, Name, Args, Body, TotalNumArgs)),
-	retractall(clause_(_, _, _)),
+	forall( ivar_(Type, Name, ArgIdx, _), (
+		make_ivar_(Class, Type, Name, ArgIdx, TotalNumArgs)
+	)),
 
-	forall(iconstructor_(Args),
-		make_iconstructor_(Class, Args, TotalNumArgs)),
-	retractall(iconstructor_(_)),
+	forall( clause_(Name, Args, Body), (
+		make_clause_(Class, Name, Args, Body, TotalNumArgs)
+	)),
 
-	asserta( obj_pred_(Class, arity(TotalNumArgs), _) ).
+	forall( iconstructor_(Args), (
+		make_iconstructor_(Class, Args, TotalNumArgs)
+	)),
+
+	retractall( ivar_(_, _, _, _) ),
+	retractall( clause_(_, _, _) ),
+	retractall( iconstructor_(_) ).

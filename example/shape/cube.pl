@@ -17,5 +17,10 @@
 	:- area(Self, Area) --
 		Self.side(Side),
 		Side.length(Length),
-		Area is Length * Length * Length.
+		Area is 6 * Length * Length.
+
+	:- volume(Self, Volume) --
+		Self.side(Side),
+		Side.length(Length),
+		Volume is Length * Length * Length.
 :- end_class.

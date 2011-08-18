@@ -164,8 +164,12 @@ end_class :-
 	retract( next_arg_idx_(_) ),
 
 	functor(Template, Class, TotalNumArgs),
-	foreach( ivar_(_, _, ArgIdx, Default), (
-		nb_linkarg(ArgIdx, Template, Default)
+	forall( ivar_(_, _, ArgIdx, Default), (
+		(
+			var(Default), !
+		;
+			nb_linkarg(ArgIdx, Template, Default)
+		)
 	)),
 	asserta( obj_pred_(Class, 0, template_(Template), _) ),
 

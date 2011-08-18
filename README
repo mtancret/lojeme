@@ -18,11 +18,11 @@ Try It Out
 > swipl
 
 ?- [load].
-%  library(lojeme) compiled 0.00 sec, 15,960 bytes
-%  line_segment compiled 0.02 sec, 468,792 bytes
-%  square compiled 0.01 sec, 4,416 bytes
-%  cube compiled 0.00 sec, 4,144 bytes
-% load compiled 0.03 sec, 496,592 bytes
+%  library(lojeme) compiled 0.00 sec, 15,848 bytes
+%  line_segment compiled 0.00 sec, 4,224 bytes
+%  square compiled 0.01 sec, 4,480 bytes
+%  cube compiled 0.00 sec, 4,712 bytes
+% load compiled 0.01 sec, 32,544 bytes
 true.
 
 ?- square.new(S, 10, red), S.color(Color), S.area(Area).
@@ -30,9 +30,9 @@ S = square(line_segment(10, red), red),
 Color = red,
 Area = 100 .
 
-?- cube.new(C, 10), C.set_color(green), C.area(Area).
-C = cube(line_segment(10, _G21), green),
-Area = 1000 .
+?- cube.new(C, 10), C.set_color(red), C.volume(Volume).
+C = cube(line_segment(10, green), red),
+Volume = 1000 .
 
 ================================================================================
 Status

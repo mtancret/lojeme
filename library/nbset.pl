@@ -21,25 +21,25 @@
 
 	:- new(Self) --
 		empty_nb_set(Set),
-		Self::set_set(Set).
+		Self.set_set(Set).
 
 	:- add(Self, Key) --
-		Self::set(Set),
+		Self.set(Set),
 		add_nb_set(Key, Set).
 
 	:- add(Self, Key, New) --
-		Self::set(Set),
+		Self.set(Set),
 		add_nb_set(Key, Set, New).
 
 	:- gen(Self, Key) --
-		Self::set(Set),
+		Self.set(Set),
 		gen_nb_set(Set, Key).
 
 	:- size(Self, Size) --
-		Self::set(Set),
+		Self.set(Set),
 		size_nb_set(Set, Size).
 		
 	:- to_list(Self, List) --
-		Self::set(Set),
+		Self.set(Set),
 		size_set_to_list(Set, List).
 :- end_class.

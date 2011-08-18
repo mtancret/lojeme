@@ -24,40 +24,40 @@
 
 	:- new(Self) --
 		gensym(o, Mapid),
-		Self::set_mapid(Mapid),
+		Self.set_mapid(Mapid),
 
 		functor(Array, array, 128),
-		Self::set_array(Array),
+		Self.set_array(Array),
 
-		Self::set_next_idx(1).
+		Self.set_next_idx(1).
 
 	:- add(Self, Key, Value) --
-		Self::next_idx(Idx),
+		Self.next_idx(Idx),
 		
-		Self::mapid(Mapid),
+		Self.mapid(Mapid),
 		asserta(hashmap:map(Mapid, Key, Idx)),
 
 		(
-			Self::array(Array),
+			Self.array(Array),
 			functor(Array, _, Size),
 			Idx =< Size, !
 		;
-			Self::expand(Array)
+			Self.expand(Array)
 		),
 		nb_linkarg(Idx, Array, Value),
 
 		NextIdx is Idx + 1,
-		Self::set_next_idx(NextIdx).
+		Self.set_next_idx(NextIdx).
 
 	:- key_value(Self, Key, Value) --
-		Self::mapid(Mapid),
+		Self.mapid(Mapid),
 		hashmap:map(Mapid, Key, Idx),
 
-		Self::array(Array),
+		Self.array(Array),
 		arg(Idx, Array, Value).
 
 	:- expand(Self, NewArray) --
-		Self::array(Array),
+		Self.array(Array),
 		functor(Array, _, Size),
 		NewSize is Size * 2,
 		functor(NewArray, array, NewSize),
@@ -65,5 +65,5 @@
 			arg(I, Array, Arg),
 			nb_linkarg(I, NewArray, Arg)
 		)),
-		Self::set_array(NewArray).
+		Self.set_array(NewArray).
 :- end_class.

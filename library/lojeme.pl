@@ -16,6 +16,8 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
+:- set_prolog_flag(generate_debug_info, false).
+
 :- dynamic(obj_pred_/4).
 :- op(650, xfy, .).
 Obj.Goal :-
@@ -95,14 +97,33 @@ var_check_(Type, Var, Check) :-
 
 class_cast_exception_(Obj, ExpectedType) :-
 	term_type_(Obj, Type),
-	write('Class cast exception for object '),
+	write('Error: Class cast exception for object '),
 	write(Obj),
 	write(' of type: '),
 	write(Type),
 	write(', expected: '),
 	write(ExpectedType),
 	nl,
+	print_stack_,
 	fail, !.
+
+print_stack_ :-
+	prolog_current_frame(Current),
+	print_frames_(Current, 1).
+	
+print_frames_(Current, Count) :-
+	print_frame_(Current, Parent, Count),
+	CountP is Count + 1,
+	print_frames_(Parent, CountP).
+print_frames_(_, _).
+
+print_frame_(Current, Parent, Count) :-
+	prolog_frame_attribute(Current, goal, Goal),
+	write(Count),
+	write('. '),
+	write(Goal),
+	nl,
+	prolog_frame_attribute(Current, parent, Parent).
 
 instanceof(Object, Class) :-
 	Object =.. [BaseClass|_],

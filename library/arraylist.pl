@@ -1,5 +1,5 @@
-% hashmap.pl
-% Purpose: Encapsulates a hashmap data structure.
+% nbset.pl
+% Purpose: Encapsulates an array data structure.
 % Author(s): Matthew Tan Creti
 %
 % Copyright 2011 Matthew Tan Creti
@@ -16,25 +16,16 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-:- dynamic(map/3).
-:- class(hashmap).
-	:- ivar(atom, mapid).
+:- class(arraylist).
 	:- ivar(array, array).
 	:- ivar(integer, next_idx, 1).
 
 	:- new(Self) --
-		gensym(o, Mapid),
-		Self.set_mapid(Mapid),
-
-		functor(Array, array, 128),
+		functor(Array, array, 8),
 		Self.set_array(Array).
 
-	:- add(Self, Key, Value) --
+	:- add(Self, Value) --
 		Self.next_idx(Idx),
-		
-		Self.mapid(Mapid),
-		asserta(hashmap:map(Mapid, Key, Idx)),
-
 		(
 			Self.array(Array),
 			functor(Array, _, Size),
@@ -43,16 +34,15 @@
 			Self.expand(Array)
 		),
 		nb_linkarg(Idx, Array, Value),
-
 		NextIdx is Idx + 1,
 		Self.set_next_idx(NextIdx).
 
-	:- key_value(Self, Key, Value) --
-		Self.mapid(Mapid),
-		hashmap:map(Mapid, Key, Idx),
-
+	:- contains(Self, Value) --
 		Self.array(Array),
-		arg(Idx, Array, Value).
+		Self.next_idx(Idx),
+		Size is Idx - 1,
+		between(1, Size, I),
+		arg(I, Array, Value).
 
 	:- expand(Self, NewArray) --
 		Self.array(Array),
